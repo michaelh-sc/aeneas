@@ -232,6 +232,60 @@ class SyncMapFormat(object):
     .. versionadded:: 1.2.0
     """
 
+
+    FFMPEG = SyncMapFormatFFMPEG.DEFAULT
+    """
+    JSON::
+
+        {
+         "fragments": [
+          {
+           "id": "f001",
+           "language": "en",
+           "begin": 0.000,
+           "end": 1.234,
+           "children": [],
+           "lines": [
+            "First fragment text"
+           ]
+          },
+          {
+           "id": "f002",
+           "language": "en",
+           "begin": 1.234,
+           "end": 5.678,
+           "children": [],
+           "lines": [
+            "Second fragment text",
+            "Second line of second fragment"
+           ]
+          },
+          {
+           "id": "f003",
+           "language": "en",
+           "begin": 5.678,
+           "end": 7.890,
+           "children": [],
+           "lines": [
+            "Third fragment text",
+            "Second line of third fragment"
+           ]
+          }
+         ]
+        }
+
+    * Multiple levels: yes (output only)
+    * Multiple lines: yes
+
+    .. versionadded:: 1.2.0
+    """
+
+
+
+
+
+
+
     RBSE = SyncMapFormatRBSE.DEFAULT
     """
     JSON compatible with ``rb_smil_emulator.js``::
@@ -764,6 +818,7 @@ class SyncMapFormat(object):
         CSVM: SyncMapFormatCSV,
         DFXP: SyncMapFormatTTML,
         EAF: SyncMapFormatEAF,
+        FFMPEG: SyncMapFormatFFMPEG,
         JSON: SyncMapFormatJSON,
         RBSE: SyncMapFormatRBSE,
         SBV: SyncMapFormatSUB,

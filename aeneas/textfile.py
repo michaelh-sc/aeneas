@@ -37,6 +37,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 import io
 import re
+# michael
+import pprint
+import unicodedata
 
 from aeneas.idsortingalgorithm import IDSortingAlgorithm
 from aeneas.logger import Loggable
@@ -167,6 +170,28 @@ class TextFileFormat(object):
 
     """
 
+    PO = "po"
+    """
+    The text file contains the fragments,
+    one per line, without explicitly-assigned identifiers::
+
+        Text of the first fragment
+        Text of the second fragment
+        Text of the third fragment
+
+    """
+
+    POPALI = "popali"
+    """
+    The text file contains the fragments,
+    one per line, without explicitly-assigned identifiers::
+
+        Text of the first fragment
+        Text of the second fragment
+        Text of the third fragment
+
+    """
+
     SUBTITLES = "subtitles"
     """
     The text file contains the fragments,
@@ -234,7 +259,7 @@ class TextFileFormat(object):
     MULTILEVEL_VALUES = [MPLAIN, MUNPARSED]
     """ List of all multilevel formats """
 
-    ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, SUBTITLES, UNPARSED]
+    ALLOWED_VALUES = [MPLAIN, MUNPARSED, PARSED, PLAIN, PO, POPALI, SUBTITLES, UNPARSED]
     """ List of all the allowed values """
 
 
@@ -624,6 +649,28 @@ class TextFile(Loggable):
         self.log(u"Reading text fragments from list")
         self._read_plain(lines)
 
+    def read_from_po_list(self, lines):
+        """
+        Read text fragments from a given list of strings::
+
+            [fragment_1, fragment_2, ..., fragment_n]
+
+        :param list lines: the text fragments
+        """
+        self.log(u"Reading text fragments from .po file")
+        self._read_po(lines, lang)
+
+    def read_from_po_pali_list(self, lines):
+        """
+        Read text fragments from a given list of strings::
+
+            [fragment_1, fragment_2, ..., fragment_n]
+
+        :param list lines: the text fragments
+        """
+        self.log(u"Reading pali text fragments from .po file")
+        self._read_po_pali(lines, lang)
+
     def read_from_list_with_ids(self, lines):
         """
         Read text fragments from a given list of tuples::
@@ -660,6 +707,8 @@ class TextFile(Loggable):
             TextFileFormat.MUNPARSED: self._read_munparsed,
             TextFileFormat.PARSED: self._read_parsed,
             TextFileFormat.PLAIN: self._read_plain,
+            TextFileFormat.PO: self._read_po,
+            TextFileFormat.POPALI: self._read_po_pali,
             TextFileFormat.SUBTITLES: self._read_subtitles,
             TextFileFormat.UNPARSED: self._read_unparsed
         }
@@ -895,6 +944,7 @@ class TextFile(Loggable):
                     pairs.append((identifier, [text]))
         self._create_text_fragments(pairs)
 
+
     def _read_plain(self, lines):
         """
         Read text fragments from a plain format text file.
@@ -915,6 +965,66 @@ class TextFile(Loggable):
             pairs.append((identifier, [text]))
             i += 1
         self._create_text_fragments(pairs)
+
+
+    def _read_po(self, lines):
+        self.log(u"Parsing fragments from .po format")
+        # id_format = self._get_id_format()
+        lines = [line.strip() for line in lines]
+        # pprint.pprint(lines)
+        pairs = []
+        i = 1
+        for i in range(len(lines)):
+            l0 = unicodedata.normalize('NFKD', lines[i]).encode('ascii','ignore')
+            if i + 1 < len(lines):
+               l1 = unicodedata.normalize('NFKD', lines[i+1]).encode('ascii','ignore')
+            else:
+               l1 = ""
+            if i + 2 < len(lines):
+              l2 = unicodedata.normalize('NFKD', lines[i+2]).encode('ascii','ignore')
+            else:
+              l2 = ""
+            if "msgctxt" in l0 and 'msgctxt ""' not in l0:
+                identifier = re.findall(ur'"([^"]*)"', lines[i])[0]
+                print("identifier: {}".format(identifier)) 
+                if "msgstr" in l1: 
+                    text = re.findall(ur'"([^"]*)"', lines[i + 1])
+                    print("text: {}".format(text)) 
+                    pairs.append((identifier, text))
+                    i += 1
+                elif "msgstr" in l2:
+                    text = re.findall(ur'"([^"]*)"', lines[i + 2])
+                    print("text: {}".format(text))
+                    print(l2)
+                    pairs.append((identifier, text))
+                    i += 2
+            i += 1
+        self._create_text_fragments(pairs)
+
+    def _read_po_pali(self, lines):
+        self.log(u"Parsing Pali fragments from .po format")
+        # id_format = self._get_id_format()
+        lines = [line.strip() for line in lines]
+        # pprint.pprint(lines)
+        pairs = []
+        i = 1
+        for i in range(len(lines)):
+            l0 = unicodedata.normalize('NFKD', lines[i]).encode('ascii','ignore')
+            if i + 1 < len(lines):
+               l1 = unicodedata.normalize('NFKD', lines[i+1]).encode('ascii','ignore')
+            else:
+               l1 = ""
+            if "msgctxt" in l0 and 'msgctxt ""' not in l0:
+                identifier = re.findall(ur'"([^"]*)"', lines[i])[0]
+                print("identifier: {}".format(identifier)) 
+                if "msgid" in l1: 
+                    text = re.findall(ur'"([^"]*)"', lines[i + 1])
+                    print("text: {}".format(text)) 
+                    pairs.append((identifier, text))
+                    i += 1
+            i += 1
+        self._create_text_fragments(pairs)
+
 
     def _read_unparsed(self, lines):
         """
