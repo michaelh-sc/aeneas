@@ -221,6 +221,7 @@ class Task(Loggable):
             gc.PPN_TASK_OS_FILE_LEVELS: levels,
             gc.PPN_TASK_OS_FILE_SMIL_AUDIO_REF: smil_audio_ref,
             gc.PPN_TASK_OS_FILE_SMIL_PAGE_REF: smil_page_ref,
+            "audio_file_path_absolute": self.audio_file_path_absolute,
         }
         self.sync_map.write(sync_map_format, path, parameters)
         self.log(u"Calling sync_map.write... done")

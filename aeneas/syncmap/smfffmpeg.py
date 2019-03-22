@@ -26,16 +26,18 @@ from __future__ import print_function
 
 from aeneas.syncmap.smfbase import SyncMapFormatBase
 import aeneas.globalfunctions as gf
+import unicodedata
 
+import pprint
 
-class SyncMapFormatGenericTabular(SyncMapFormatBase):
+class SyncMapFormatFFMPEG(SyncMapFormatBase):
     """
     Base class for tabular-like I/O format handlers.
     """
 
-    TAG = u"SyncMapFormatGenericTabular"
+    TAG = u"SyncMapFormatFFMPEG"
 
-    DEFAULT = "tabular"
+    DEFAULT = "ffmpeg"
     """
     The code for the default variant
     associated with this format.
@@ -82,7 +84,7 @@ class SyncMapFormatGenericTabular(SyncMapFormatBase):
     """
 
     def __init__(self, variant=DEFAULT, parameters=None, rconf=None, logger=None):
-        super(SyncMapFormatGenericTabular, self).__init__(variant=variant, parameters=parameters, rconf=rconf, logger=logger)
+        super(SyncMapFormatFFMPEG, self).__init__(variant=variant, parameters=parameters, rconf=rconf, logger=logger)
         # store parse/format time functions
         if self.variant in self.MACHINE_ALIASES:
             self.parse_time_function = gf.time_from_ssmmm
@@ -150,5 +152,7 @@ class SyncMapFormatGenericTabular(SyncMapFormatBase):
                     self.TEXT_DELIMITER
                 )
             # format string
-            msg = 'ffmpeg -ss {} -i orginalfile -t {} -vcodec copy -acodec copy {}{}{}'.format(begin, end, identifier, ".flac", '\n')
-            return msg
+            in_file = self.parameters.get("audio_file_path_absolute")
+            print(in_file)
+            msg.append(u'ffmpeg -ss {} -i {} -to {} -acodec copy \'{}{}{}'.format(begin, in_file, end, identifier.replace(":", "_"), ".flac'", '\n'))
+        return u"\n".join(msg)

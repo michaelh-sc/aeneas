@@ -24,6 +24,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from aeneas.syncmap.smfffmpeg import SyncMapFormatFFMPEG
 from aeneas.syncmap.smfaudacity import SyncMapFormatAudacity
 from aeneas.syncmap.smfcsv import SyncMapFormatCSV
 from aeneas.syncmap.smfeaf import SyncMapFormatEAF
