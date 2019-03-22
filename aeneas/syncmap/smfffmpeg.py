@@ -29,6 +29,7 @@ import aeneas.globalfunctions as gf
 import unicodedata
 
 import pprint
+import os.path
 
 class SyncMapFormatFFMPEG(SyncMapFormatBase):
     """
@@ -88,10 +89,10 @@ class SyncMapFormatFFMPEG(SyncMapFormatBase):
         # store parse/format time functions
         if self.variant in self.MACHINE_ALIASES:
             self.parse_time_function = gf.time_from_ssmmm
-            self.format_time_function = gf.time_to_ssmmm
         else:
             self.parse_time_function = gf.time_from_hhmmssmmm
-            self.format_time_function = gf.time_to_hhmmssmmm
+
+        self.format_time_function = gf.time_to_mmssmmm
         # create write template string
         placeholders = [None for i in range(len(self.FIELDS))]
         for k in self.FIELDS:
@@ -137,6 +138,12 @@ class SyncMapFormatFFMPEG(SyncMapFormatBase):
 
     def format(self, syncmap):
         msg = []
+        in_file = self.parameters.get("audio_file_path_absolute")
+        in_file_suffix = os.path.splitext(in_file)[1]
+        in_file_no_suffix = os.path.splitext(in_file)[1]
+        # in_file_trimmed = in_file[:-5] + "_trimmed" + in_file_suffix
+        # in_file_trimmed_no_suffix = os.path.splitext(in_file_trimmed)[0]
+        # msg.append(u'ffmpeg -y -i {} -af "silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp,areverse,silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp,areverse" {}'.format("'" + in_file + "'", "'" + in_file_trimmed + "'"))
         for fragment in syncmap.fragments:
             # get identifier
             identifier = fragment.text_fragment.identifier
@@ -151,8 +158,7 @@ class SyncMapFormatFFMPEG(SyncMapFormatBase):
                     text,
                     self.TEXT_DELIMITER
                 )
-            # format string
-            in_file = self.parameters.get("audio_file_path_absolute")
-            print(in_file)
-            msg.append(u'ffmpeg -ss {} -i {} -to {} -acodec copy \'{}{}{}'.format(begin, in_file, end, identifier.replace(":", "_"), ".flac'", '\n'))
+            msg.append(u'#  ' + text)
+            msg.append(u'#  ' + identifier)
+            msg.append(u'ffmpeg -y -ss {} -i {} -to {} -acodec copy {}{}{}'.format(begin, "'" + in_file + "'", end, "'" + identifier.replace(":", "_"), ".wav" + "'", '\n'))
         return u"\n".join(msg)
