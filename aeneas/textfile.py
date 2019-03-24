@@ -973,32 +973,44 @@ class TextFile(Loggable):
         lines = [line.strip() for line in lines]
         # pprint.pprint(lines)
         pairs = []
-        i = 1
-        for i in range(len(lines)):
+        i = 0
+        po_file_length = len(lines)
+        while i < po_file_length:
+            # Skip vagga and sutta headings
             l0 = unicodedata.normalize('NFKD', lines[i]).encode('ascii','ignore')
+            print(l0)
+            if (":0.1" in l0 or ":0.2" in l0):
+                i = i + 3
+                continue
+
             if i + 1 < len(lines):
                l1 = unicodedata.normalize('NFKD', lines[i+1]).encode('ascii','ignore')
             else:
                l1 = ""
+            
             if i + 2 < len(lines):
               l2 = unicodedata.normalize('NFKD', lines[i+2]).encode('ascii','ignore')
             else:
               l2 = ""
+
             if "msgctxt" in l0 and 'msgctxt ""' not in l0:
-                identifier = re.findall(ur'"([^"]*)"', lines[i])[0]
-                print("identifier: {}".format(identifier)) 
+                # identifier = re.findall(ur'"([^"]*)"', l0lines[i])[0]
+                identifier = re.findall(ur'"([^"]*)"', l0)[0].encode("UTF-8", "ignore")
+                print("identififier")
+                pprint.pprint(identifier)
                 if "msgstr" in l1: 
-                    text = re.findall(ur'"([^"]*)"', lines[i + 1])
-                    print("text: {}".format(text)) 
-                    pairs.append((identifier, text))
-                    i += 1
+                    # text = re.findall(ur'"([^"]*)"', lines[i + 1])
+                    text = re.findall(ur'"([^"]*)"', l1)
+                    # Strip all numbers from beginning of text
+                    pairs.append((identifier, l1.encode("UTF-8", "ignore")))
                 elif "msgstr" in l2:
-                    text = re.findall(ur'"([^"]*)"', lines[i + 2])
-                    print("text: {}".format(text))
-                    print(l2)
-                    pairs.append((identifier, text))
-                    i += 2
-            i += 1
+                    # text = re.findall(ur'"([^"]*)"', lines[i + 2])
+                    text = re.findall(ur'"([^"]*)"', l2)
+                    # Strip all numbers from beginning of text
+                    pairs.append((identifier, l2.encode("UTF-8", "ignore")))
+                    i = i + 1
+            i = i + 1
+            
         self._create_text_fragments(pairs)
 
     def _read_po_pali(self, lines):
@@ -1007,9 +1019,14 @@ class TextFile(Loggable):
         lines = [line.strip() for line in lines]
         # pprint.pprint(lines)
         pairs = []
-        i = 1
-        for i in range(len(lines)):
+        i = 0
+        po_file_length = len(lines)
+        while i < po_file_length:
             l0 = unicodedata.normalize('NFKD', lines[i]).encode('ascii','ignore')
+            if (":0.1" in l0 or ":0.2" in l0):
+                i += 3
+                print("skip vagga/nikaya")
+                continue
             if i + 1 < len(lines):
                l1 = unicodedata.normalize('NFKD', lines[i+1]).encode('ascii','ignore')
             else:
@@ -1019,7 +1036,7 @@ class TextFile(Loggable):
                 print("identifier: {}".format(identifier)) 
                 if "msgid" in l1: 
                     text = re.findall(ur'"([^"]*)"', lines[i + 1])
-                    print("text: {}".format(text)) 
+                    # print("text: {}".format(text)) 
                     pairs.append((identifier, text))
                     i += 1
             i += 1
