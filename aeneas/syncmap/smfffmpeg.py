@@ -92,7 +92,7 @@ class SyncMapFormatFFMPEG(SyncMapFormatBase):
         else:
             self.parse_time_function = gf.time_from_hhmmssmmm
 
-        self.format_time_function = gf.time_to_mmssmmm
+        self.format_time_function = gf.time_to_hhmmssmmm
         # create write template string
         placeholders = [None for i in range(len(self.FIELDS))]
         for k in self.FIELDS:
@@ -160,5 +160,5 @@ class SyncMapFormatFFMPEG(SyncMapFormatBase):
                 )
             msg.append(u'#  ' + text)
             msg.append(u'#  ' + identifier)
-            msg.append(u'ffmpeg -y -ss {} -i {} -to {} -acodec copy {}{}{}'.format(begin, "'" + in_file + "'", end, "'" + identifier.replace(":", "_"), ".wav" + "'", '\n'))
+            msg.append(u'ffmpeg -y -ss {} -i {} -to {} -acodec copy {}{}{}'.format(begin, "'" + in_file + "'", end, "'" + identifier.replace(":", "_"), in_file_suffix + "'", '\n'))
         return u"\n".join(msg)
